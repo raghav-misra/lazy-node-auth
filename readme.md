@@ -1,5 +1,4 @@
-## Number Formatter
-=========
+## lazy-node-auth
 
 Unopinionated auth manager that's good for hackathons & **BAD FOR PRODUCTION.**
 
