@@ -1,5 +1,5 @@
 // #region | Import Garbage:
-const fs = require('fs');
+import * as fs from 'fs';
 const nodeCrypto = require('crypto');
 const hashify = (toBeHashed: string): string => nodeCrypto.createHash('sha256').update(toBeHashed).digest("hex"); 
 // #endregion
@@ -20,7 +20,7 @@ interface IUserStore {
 // #endregion
 
 // #region | Main Export
-interface LazyNodeAuth {
+interface ILazyNodeAuth {
     register(username: string, password: string, props?: IPrimitiveStore): void;
     remove(username: string, password: string): void;
     
@@ -31,11 +31,14 @@ interface LazyNodeAuth {
     setProps(username: string, password: string, changedProps?: IPrimitiveStore): void;
 
     changePassword(username: string, oldPassword: string, newPassword: string): void;
+
+    sync(): void;
+    restore(): void;
 }
 // #endregion
 
 // #region | Internal Authentication Controller:
-class InternalManager implements LazyNodeAuth {
+class InternalManager implements ILazyNodeAuth {
     // Path to database:
     filePath: string;
 
@@ -45,6 +48,8 @@ class InternalManager implements LazyNodeAuth {
     // Setup:
     constructor(filePath: string) {
         this.filePath = filePath;
+        if(!fs.existsSync(this.filePath)) fs.writeFileSync(this.filePath, "");
+        this.restore();
     }
 
     // Add user:
@@ -90,14 +95,25 @@ class InternalManager implements LazyNodeAuth {
     changePassword(username: string, oldPassword: string, newPassword: string) {
         if (this.validate(username, oldPassword)) this.store[username].$_hash = hashify(newPassword);
     }
+
+    // DB Interaction:
+    sync() {
+        fs.writeFileSync(this.filePath, JSON.stringify(this.store), { encoding: 'utf8' });
+    }
+
+    restore() {
+        const newData: string = fs.readFileSync(this.filePath).toString();
+        if (newData.trim() == "") this.store = {};
+        else this.store = JSON.parse(newData.trim());
+    }
 }
 // #endregion
 
 // #region | CJS Export Function:   
-module.exports = (filePath: string) => {
+function createAuth(filePath: string)  {
     const manager = new InternalManager(filePath);
 
-    const returnObject: LazyNodeAuth = {
+    const returnObject: ILazyNodeAuth = {
         register: (u: string, p: string, props: IPrimitiveStore = {}) => manager.register(u, p, props),
         remove: (u: string, p: string) => manager.remove(u, p),
 
@@ -107,7 +123,10 @@ module.exports = (filePath: string) => {
         getProps: (u: string, p: string) => manager.getProps(u, p),
         setProps: (u: string, p: string, changedProps: IPrimitiveStore = {}) => manager.setProps(u, p, changedProps),
 
-        changePassword: (u: string, op: string, np: string) => manager.changePassword(u, op, np)
+        changePassword: (u: string, op: string, np: string) => manager.changePassword(u, op, np),
+
+        sync: () => manager.sync(),
+        restore: () => manager.restore()
     };
     
     Object.freeze(returnObject);
@@ -115,4 +134,6 @@ module.exports = (filePath: string) => {
 
     return returnObject;
 };
+
+export default createAuth;
 // #endregion
