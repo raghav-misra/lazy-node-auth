@@ -14,8 +14,7 @@ const LazyNodeAuth = require('lazy-node-auth');
 
 // Create a new instance:
 const authManager = new LazyNodeAuth(
-    "./store.json", // Database location.
-    "{ firstName, lastName }" // Extra properties.
+    "./store.json" // Database location.
 );
 
 // Register a new user: () => void.

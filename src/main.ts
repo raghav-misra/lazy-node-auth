@@ -18,15 +18,10 @@ interface IUserStore {
 }
 // #endregion
 
-/*
- * Main Auth Class
- */
+// #region | Main Authentication Controller:
 class LazyNodeAuth {
     // Path to database:
     filePath: string;
-
-    // Additional options:
-    userData: Array<string> = null;
 
     // Storage:
     store: IUserStore = {};
@@ -44,6 +39,8 @@ class LazyNodeAuth {
         }
     }
 }
+// #endregion
 
-// CJS Export: 
+// #region | CJS Export Function:   
 module.exports = (filePath: string) => new LazyNodeAuth(filePath);
+// #endregion

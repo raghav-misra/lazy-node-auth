@@ -13,7 +13,6 @@ interface IUserStore {
 }
 declare class LazyNodeAuth {
     filePath: string;
-    userData: Array<string>;
     store: IUserStore;
     constructor(filePath: string);
     register(username: string, password: string, userData?: IPrimitiveStore): void;
