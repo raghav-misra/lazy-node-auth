@@ -1,6 +1,6 @@
 {
   "name": "lazy-node-auth",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Unopinionated auth manager that's good for hackathons & BAD FOR PRODUCTION.",
   "main": "./lib/main.js",
   "lib": "./lib",
