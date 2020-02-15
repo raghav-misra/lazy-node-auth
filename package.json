@@ -2,7 +2,9 @@
   "name": "lazy-node-auth",
   "version": "0.0.1",
   "description": "Unopinionated auth manager that's good for hackathons & BAD FOR PRODUCTION.",
-  "main": "index.js",
+  "main": "./lib/main.js",
+  "lib": "./lib",
+  "types": "./lib/main.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "cd test && tsc && node test.js"
