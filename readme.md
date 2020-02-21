@@ -6,54 +6,67 @@ Unopinionated auth manager that's good for hackathons & **BAD FOR PRODUCTION.**
 
 `npm i lazy-node-auth`
 
-## Example Usage (Typescript ofc):
+## Concepts:
 
+With each user account, three properties are stored:
+- The `SHA256` password hash (auto-generated).
+- Private props (optional). (Ex. email, address).
+- Public props (optional). (Ex. job title, bio).
+
+The data types that can be stored (as public/private props) are defined in the `IPrimitive` type:
 ```ts
-// Import library:
-import LazyNodeAuth from "lazy-node-auth";
-const Auth = LazyNodeAuth("dbo.json");
-
-// Constants:
-const USERNAME = 'TESddT';
-const [PASSWORD, NEW_PASSWORD] = ["TESTdd123", "TddEST234"];
-
-const [FIRSTNAME, LASTNAME] = ["4444444444444444", "4444444444444444444444"];
-const [NEW_FIRSTNAME, NEW_LASTNAME] = ["444444444444444444444", "444444444444444444"]
-
-// Register User:
-console.log(`---\nRegistering user '${USERNAME}' w/firstname '${FIRSTNAME}' and lastname '${LASTNAME}'. Password is '${PASSWORD}'`);
-Auth.register(USERNAME, PASSWORD, { FIRSTNAME, LASTNAME });
-console.log("Registered!\n---");
-
-// Check existence:
-console.log(`Checking if user '${USERNAME}' exists.`);
-let testExists = Auth.exists(USERNAME);
-console.log(`User ${USERNAME} exists: ${testExists}\n---`);
-
-// Validate if user and password match:
-console.log(`Checking if user '${USERNAME}' and password '${PASSWORD}' match.`);
-let userPassMatch = Auth.validate(USERNAME, PASSWORD);
-console.log(`User '${USERNAME}' and password '${PASSWORD}' match: ${userPassMatch}\n---`);
-
-// Get user props:
-let userProps = Auth.getProps(USERNAME, PASSWORD);
-console.log(`Current user props for account '${USERNAME}': ${JSON.stringify(userProps)}\n---`);
-
-// Set user props: 
-console.log(`Setting user props for account '${USERNAME}'. New first name: ${NEW_FIRSTNAME}, new last name: ${NEW_LASTNAME}`);
-Auth.setProps(USERNAME, PASSWORD, { FIRSTNAME: NEW_FIRSTNAME, LASTNAME: NEW_LASTNAME });
-userProps = Auth.getProps(USERNAME, PASSWORD);
-console.log(`New user props for account '${USERNAME}': ${JSON.stringify(userProps)}\n---`);
-
-// Change & validate new password:
-console.log(`Changing password for user '${USERNAME}' from ${PASSWORD} to ${NEW_PASSWORD}`);
-Auth.changePassword(USERNAME, PASSWORD, NEW_PASSWORD);
-userPassMatch = Auth.validate(USERNAME, NEW_PASSWORD);
-console.log(`Changed! Checking if user '${USERNAME}' and new password '${NEW_PASSWORD}' match: ${userPassMatch}\n---`);
-
-// Write to file:
-console.log(`Syncing to file.`);
-Auth.sync();
+type IPrimitive = 
+    string | 
+    boolean | 
+    number | 
+    null | 
+    IPrimitive[] | 
+    { [key: string]: IPrimitive };
 ```
 
-Run this example
+## Example Usage (Typescript of course):
+
+Import the module:
+```ts
+import LazyNodeAuth from "lazy-node-auth";
+const Auth = LazyNodeAuth("auth.store"); // File location.
+```
+
+Create an account (signup):
+```ts
+const USERNAME = "RameshMondo";
+const PASSWORD = "@RMondo123";
+
+Auth.register(USERNAME, PASSWORD);
+```
+
+Validate username and password match (login):
+```ts
+const match: boolean = Auth.validate(USERNAME, PASSWORD); 
+
+Set private props (username & password required): 
+```ts
+Auth.setPrivateProps(USERNAME, PASSWORD, {
+    phone: ["1", "000", "999", "1234"],
+    address: ["The White House", "San Francisco", "CA"]
+});
+```
+
+Set public props (username & password required):
+```ts
+Auth.setPublicProps(USERNAME, PASSWORD, {
+    firstName: "Ramesh",
+    lastName: "Mondo"
+});
+```
+
+Get private props (username & password required):
+```ts
+const privateProps = Auth.getPrivateProps(USERNAME, PASSWORD);
+```
+
+Get public props (username required):
+```ts
+const publicProps = Auth.getPublicProps(USERNAME);
+```
+
