@@ -1,17 +1,16 @@
 // Import library:
 import LazyNodeAuth from "../lib/main";
-const Auth = LazyNodeAuth("dbo.json");
+const Auth = LazyNodeAuth(".auth");
 
 // Constants:
-const USERNAME = 'TESddT';
-const [PASSWORD, NEW_PASSWORD] = ["TESTdd123", "TddEST234"];
-
-const [FIRSTNAME, LASTNAME] = ["4444444444444444", "4444444444444444444444"];
-const [NEW_FIRSTNAME, NEW_LASTNAME] = ["444444444444444444444", "444444444444444444"]
+const USERNAME = 'TEST';
+const [PASSWORD, NEW_PASSWORD] = ["TEST", "TEST234"];
+const [FIRSTNAME, LASTNAME] = ["Ramesh", "Mondo"];
+const DOB = ["1", "12", "2015"];
 
 // Register User:
 console.log(`---\nRegistering user '${USERNAME}' w/firstname '${FIRSTNAME}' and lastname '${LASTNAME}'. Password is '${PASSWORD}'`);
-Auth.register(USERNAME, PASSWORD, { FIRSTNAME, LASTNAME });
+Auth.register(USERNAME, PASSWORD);
 console.log("Registered!\n---");
 
 // Check existence:
@@ -24,15 +23,25 @@ console.log(`Checking if user '${USERNAME}' and password '${PASSWORD}' match.`);
 let userPassMatch = Auth.validate(USERNAME, PASSWORD);
 console.log(`User '${USERNAME}' and password '${PASSWORD}' match: ${userPassMatch}\n---`);
 
-// Get user props:
-let userProps = Auth.getProps(USERNAME, PASSWORD);
-console.log(`Current user props for account '${USERNAME}': ${JSON.stringify(userProps)}\n---`);
+// Get public user props:
+let publicProps = Auth.getPublicProps(USERNAME);
+console.log(`Current public user props for account '${USERNAME}': ${JSON.stringify(publicProps)}\n---`);
 
-// Set user props: 
-console.log(`Setting user props for account '${USERNAME}'. New first name: ${NEW_FIRSTNAME}, new last name: ${NEW_LASTNAME}`);
-Auth.setProps(USERNAME, PASSWORD, { FIRSTNAME: NEW_FIRSTNAME, LASTNAME: NEW_LASTNAME });
-userProps = Auth.getProps(USERNAME, PASSWORD);
-console.log(`New user props for account '${USERNAME}': ${JSON.stringify(userProps)}\n---`);
+// Set public user props: 
+console.log(`Setting public user props for account '${USERNAME}'. New first name: ${FIRSTNAME}, new last name: ${LASTNAME}`);
+Auth.setPublicProps(USERNAME, PASSWORD, { FIRSTNAME, LASTNAME });
+publicProps = Auth.getPublicProps(USERNAME);
+console.log(`New public user props for account '${USERNAME}': ${JSON.stringify(publicProps)}\n---`);
+
+// Get private user props:
+let privateProps = Auth.getPrivateProps(USERNAME, PASSWORD);
+console.log(`Current private user props for account '${USERNAME}': ${JSON.stringify(privateProps)}\n---`);
+
+// Set public user props: 
+console.log(`Setting private user props for account '${USERNAME}'. New DOB: ${DOB.join("-")}`);
+Auth.setPrivateProps(USERNAME, PASSWORD, { DOB });
+privateProps = Auth.getPrivateProps(USERNAME, PASSWORD);
+console.log(`New private user props for account '${USERNAME}': ${JSON.stringify(privateProps)}\n---`);
 
 // Change & validate new password:
 console.log(`Changing password for user '${USERNAME}' from ${PASSWORD} to ${NEW_PASSWORD}`);

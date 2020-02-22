@@ -12,7 +12,8 @@ interface IPrimitiveStore {
 
 interface IUser extends IPrimitiveStore {
     $_hash: string;
-    $_props: IPrimitiveStore
+    $_privateProps: IPrimitiveStore;
+    $_publicProps: IPrimitiveStore;
 }
 interface IUserStore {
     [username: string]: IUser;
@@ -21,14 +22,17 @@ interface IUserStore {
 
 // #region | Main Export
 interface ILazyNodeAuth {
-    register(username: string, password: string, props?: IPrimitiveStore): void;
+    register(username: string, password: string): void;
     remove(username: string, password: string): void;
     
     exists(username: string): boolean;
     validate(username: string, password: string): boolean;
 
-    getProps(username: string, password: string): void;
-    setProps(username: string, password: string, changedProps?: IPrimitiveStore): void;
+    getPrivateProps(username: string, password: string): IPrimitiveStore;
+    setPrivateProps(username: string, password: string, changedProps?: IPrimitiveStore): void;
+
+    getPublicProps(username: string): IPrimitiveStore;
+    setPublicProps(username: string, password: string, changedProps?: IPrimitiveStore): void;
 
     changePassword(username: string, oldPassword: string, newPassword: string): void;
 
@@ -53,10 +57,11 @@ class InternalManager implements ILazyNodeAuth {
     }
 
     // Add user:
-    register(username: string, password: string, props: IPrimitiveStore = {}) {
+    register(username: string, password: string) {
         this.store[username] = {
             $_hash: hashify(password),
-            $_props: { ...props }
+            $_privateProps: {},
+            $_publicProps: {}
         }
     }
 
@@ -78,16 +83,29 @@ class InternalManager implements ILazyNodeAuth {
     }
 
     // Get/set props:
-    getProps(username: string, password: string) {
-        if(this.validate(username, password)) return this.store[username].$_props;
+    getPrivateProps(username: string, password: string) {
+        if(this.validate(username, password)) return this.store[username].$_privateProps;
     }
 
-    setProps(username: string, password: string, changedProps: IPrimitiveStore = {}) {
+    setPrivateProps(username: string, password: string, changedProps: IPrimitiveStore = {}) {
         if(this.validate(username, password)) {
-            this.store[username].$_props = {
-                ...this.store[username].$_props,
+            this.store[username].$_privateProps = {
+                ...this.store[username].$_privateProps,
                 ...changedProps
-            }
+            };
+        }
+    }
+
+    getPublicProps(username: string) {
+        if(this.exists(username)) return this.store[username].$_publicProps;
+    }
+
+    setPublicProps(username: string, password: string, changedProps: IPrimitiveStore = {}) {
+        if(this.validate(username, password)) {
+            this.store[username].$_publicProps = {
+                ...this.store[username].$_publicProps,
+                ...changedProps
+            };
         }
     }
 
@@ -114,14 +132,17 @@ function createAuth(filePath: string)  {
     const manager = new InternalManager(filePath);
 
     const returnObject: ILazyNodeAuth = {
-        register: (u: string, p: string, props: IPrimitiveStore = {}) => manager.register(u, p, props),
+        register: (u: string, p: string) => manager.register(u, p),
         remove: (u: string, p: string) => manager.remove(u, p),
 
         exists: (u: string) => manager.exists(u),
         validate: (u: string, p: string) => manager.validate(u, p),
 
-        getProps: (u: string, p: string) => manager.getProps(u, p),
-        setProps: (u: string, p: string, changedProps: IPrimitiveStore = {}) => manager.setProps(u, p, changedProps),
+        getPrivateProps: (u: string, p: string) => manager.getPrivateProps(u, p),
+        setPrivateProps: (u: string, p: string, changedProps: IPrimitiveStore = {}) => manager.setPrivateProps(u, p, changedProps),
+
+        getPublicProps: (u: string) => manager.getPublicProps(u),
+        setPublicProps: (u: string, p: string, changedProps: IPrimitiveStore = {}) => manager.setPublicProps(u, p, changedProps),
 
         changePassword: (u: string, op: string, np: string) => manager.changePassword(u, op, np),
 
